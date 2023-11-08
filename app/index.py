@@ -34,6 +34,8 @@ class MyClient(discord.Client):
         # don't respond to ourselves
         if message.author == self.user:
             return
+        
+
 
         if bot_name in message.content.lower() or bot_nickname in message.content.lower():
             #print('responder a msg')
@@ -68,6 +70,9 @@ class MyClient(discord.Client):
             else:
                 response = responda(message.content)
                 await message.reply(response)
+                
+        else:
+            responda(message.content)
 
 
 intents = discord.Intents.all()
