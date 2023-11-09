@@ -3,10 +3,10 @@ from chatterbot.trainers import ListTrainer
 from dataset import dataset
 from spacy.cli import download
 
-download("en_core_web_sm")
+download("pt_core_news_sm")
 
 class ENGSM:
-    ISO_639_1 = 'en_core_web_sm'
+    ISO_639_1 = "pt_core_news_sm"
 
 
 chatbot = ChatBot("Poeta Urbano", tagger_language=ENGSM)

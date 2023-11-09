@@ -1,13 +1,11 @@
 import os
 import asyncio
 
-from reloading import reloading
-
 import discord
 from brain import responda, treine
 from dotenv import load_dotenv
 
-from pre_processing import preprocess_input
+from pre_processing import preprocess_input, replace_named_entities
 
 
 load_dotenv()
@@ -73,6 +71,7 @@ class MyClient(discord.Client):
                 if bot_nickname in ctnt:
                     ctnt = ctnt.replace(bot_nickname, '')
                 ctnt = preprocess_input(ctnt)
+                ctnt = replace_named_entities(ctnt)
                 response = responda(ctnt)
                 print(
                     f'{message.author}: {message.content}', 
@@ -88,10 +87,5 @@ class MyClient(discord.Client):
 
 intents = discord.Intents.all()
 client = MyClient(intents=intents)
-
-def main():
-    client.run(token)
-    
-if __name__ == '__main__':
-    main()
+client.run(token)
 
