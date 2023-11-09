@@ -18,4 +18,5 @@ def responda(texto):
 def treine():
     trainer = ListTrainer(chatbot)
     trainer.train(dataset)
+    
 
