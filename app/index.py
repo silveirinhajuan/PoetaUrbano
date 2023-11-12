@@ -1,6 +1,8 @@
 import os
 import asyncio
 
+from dataset import dataset
+
 import discord
 from brain import responda, treine
 from dotenv import load_dotenv
@@ -21,12 +23,20 @@ class MyClient(discord.Client):
     async def on_ready(self):
         print('Logged on as', self.user)
 
+    async def must_time_without_msg(self):
+        global should_respond
+        await asyncio.sleep(12 * 60 * 60)
+        await self.channels[-1].send('@everyone, esqueceram de mim?')
+        should_respond = True
+        await self.reset_should_respond()
+    
     async def reset_should_respond(self):
         print('contando 10mmin')
         global should_respond
         await asyncio.sleep(10 * 60)  # espera 10 minutos
         print('TIME OUT: call again bot with "poeta urbano" or "poeta"')
         should_respond = False
+        await self.must_time_without_msg()
 
     async def on_message(self, message):
         global should_respond
@@ -37,17 +47,30 @@ class MyClient(discord.Client):
         if message.author == self.user:
             return
 
-        if not should_respond:
+        elif not should_respond:
             if bot_name in ctnt.lower() or bot_nickname in ctnt.lower():
                 #print('responder a msg')
                 should_respond = True
-                await message.reply('Opa, parceiro!', mention_author=True)
+                with message.channel.typing():
+                    await asyncio.sleep(1)
+                    await message.reply('Opa, parceiro!', mention_author=True)
 
-            await self.reset_should_respond()
-            #print(should_respond)
+                await self.reset_should_respond()
+            else:
+                print('ta recebendo a msg')
+                if bot_name in ctnt:
+                    ctnt = ctnt.replace(bot_name, '')
+                if bot_nickname in ctnt:
+                    ctnt = ctnt.replace(bot_nickname, '')
+                ctnt = preprocess_input(ctnt)
+                ctnt = replace_named_entities(ctnt)
+                with open ('./dataset.txt', 'a', encoding='utf-8') as file:
+                    file.write(f'\n{message.content}')
 
-        if should_respond:
-            #print('variavel ficou true')
+        elif should_respond:
+            if not message.channel in self.channels:
+                self.channels.append(message.channel)
+                 
             if ctnt == 'desligar':
                 await message.channel.send('desligando...')
                 quit()
@@ -58,12 +81,19 @@ class MyClient(discord.Client):
             elif ctnt.lower() == 'stop msgs':
                 await message.channel.send('qualquer coisa me chama, samurai')
                 should_respond = False
+                await self.must_time_without_msg()
 
             #elif 'meu' in ctnt.lower() and 'nome' in ctnt.lower() and '?' in ctnt.lower():
             #   await message.reply(f'teu nome é {message.author.name}')
 
             elif 'treine' in ctnt.lower():
-                treine()
+                async with message.channel.typing():
+                    file = ''
+                    asyncio.sleep(1)
+                    await message.reply(f'treinando com os seguintes dados')
+                    file = open('dataset.txt', 'r', encoding='utf-8')
+                    await message.channel.send(f'{dataset} {[row for row in file]}')
+                    treine()
             
             else:
                 if bot_name in ctnt:
@@ -78,11 +108,10 @@ class MyClient(discord.Client):
                       f'ctnt: {ctnt}', 
                      f'response: {response}'
                 )
-                await message.reply(response)
+                async with message.channel.typing():
+                    await asyncio.sleep(1)
+                    await message.channel.send(response)
                 
-        else:
-            with open (os.path.join('./dataset.txt'), 'wb') as file:
-                file += f'{message.content}\n'
 
 
 intents = discord.Intents.all()

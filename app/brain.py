@@ -17,6 +17,9 @@ def responda(texto):
 
 def treine():
     trainer = ListTrainer(chatbot)
+    with open('dataset.txt', 'r', encoding='utf-8') as file:
+        for row in file:
+            dataset.append(row)
     trainer.train(dataset)
     
 
