@@ -3,11 +3,16 @@ import asyncio
 
 from dataset import dataset
 
+from voz import speak_this
+from changes import change_audio_or_text
+
 import discord
 from brain import responda, treine
 from dotenv import load_dotenv
 
 from pre_processing import preprocess_input, replace_named_entities
+
+import speech_recognition as sr
 
 
 load_dotenv()
@@ -20,6 +25,8 @@ should_respond = False
 
 
 class MyClient(discord.Client):
+    channels = list()
+    
     async def on_ready(self):
         print('Logged on as', self.user)
 
@@ -37,7 +44,7 @@ class MyClient(discord.Client):
         print('TIME OUT: call again bot with "poeta urbano" or "poeta"')
         should_respond = False
         await self.must_time_without_msg()
-
+        
     async def on_message(self, message):
         global should_respond
         ctnt = message.content
@@ -78,7 +85,8 @@ class MyClient(discord.Client):
             elif ctnt == 'ping':
                 await message.channel.send('pong')
 
-            elif ctnt.lower() == 'stop msgs':
+            elif ctnt.lower() == 'dorme poeta':
+                await message.channel.send('ui, mó soninho')
                 await message.channel.send('qualquer coisa me chama, samurai')
                 should_respond = False
                 await self.must_time_without_msg()
@@ -92,8 +100,13 @@ class MyClient(discord.Client):
                     asyncio.sleep(1)
                     await message.reply(f'treinando com os seguintes dados')
                     file = open('dataset.txt', 'r', encoding='utf-8')
-                    await message.channel.send(f'{dataset} {[row for row in file]}')
-                    treine()
+                    try:
+                        await message.channel.send(f'{dataset} {[row for row in file]}')
+                        treine()
+                        await message.channel.send(f'treinamento concluido')
+                    except: 
+                        treine()
+                        await message.channel.send(f'não consegui mandar os dados, mas treinamento foi feito com *SUCESSO*')
             
             else:
                 if bot_name in ctnt:
@@ -108,9 +121,13 @@ class MyClient(discord.Client):
                       f'ctnt: {ctnt}', 
                      f'response: {response}'
                 )
-                async with message.channel.typing():
-                    await asyncio.sleep(1)
-                    await message.channel.send(response)
+                if change_audio_or_text():
+                    await speak_this(response)
+                    await message.channel.send(file=discord.File(open('audio.mp3', 'rb'), f'{response}.mp3'))
+                else:
+                    async with message.channel.typing():
+                        await asyncio.sleep(1)
+                        await message.channel.send(response)
                 
 
 

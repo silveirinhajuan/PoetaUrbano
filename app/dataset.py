@@ -1,6 +1,3 @@
 dataset = [
-    '',
-    'hum',
-    '',
-    'fala man'
+    ' ', 'fala', ' ', 'o que tu quer?', ' ', '?', ' ', 'tsaaaa'
 ]
