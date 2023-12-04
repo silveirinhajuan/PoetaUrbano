@@ -1,3 +1,3 @@
 dataset = [
-    ' ', 'fala', ' ', 'o que tu quer?', ' ', '?', ' ', 'tsaaaa'
+    'que?', 'sons de peido', 'hein?', '*SONS DE PEIDO ESTRONDOSO*',  'não entendi', '*      SONS DE PEIDO INTERGALATICO ATRANOMICAMENTE IMENSURAVEL     *'
 ]
